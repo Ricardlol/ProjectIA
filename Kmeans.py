@@ -1,5 +1,5 @@
-__authors__ = ['XXXXXXXXX','YYYYYYYY']
-__group__ = 'GrupZZ'
+__authors__ = ['1354223', '1571136', '1563587']
+__group__ = 'DM.18'
 
 import numpy as np
 import utils
@@ -34,13 +34,16 @@ class KMeans:
                     if matrix has more than 2 dimensions, the dimensionality of the smaple space is the length of
                     the last dimension
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        self.X = np.random.rand(100, 5)
 
 
+        X[:] = X.astype(np.float32)
+
+        # TODO: fer el que ha dit l'Ali de files*columnes, channel
+
+        if len(X.shape) > 2:
+            self.X = np.reshape(X, (X.shape[0] * X.shape[1], X.shape[2]))
+        else:
+            self.X = X
 
     def _init_options(self, options=None):
         """
@@ -81,8 +84,12 @@ class KMeans:
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
         if self.options['km_init'].lower() == 'first':
-            self.centroids = np.random.rand(self.K, self.X.shape[1])
-            self.old_centroids = np.random.rand(self.K, self.X.shape[1])
+            self.centroids = np.zeros((self.K, self.X.shape[1]))
+            self.old_centroids = np.zeros((self.K, self.X.shape[1]))
+            for i in self.centroids:
+
+
+
         else:
             self.centroids = np.random.rand(self.K, self.X.shape[1])
             self.old_centroids =np.random.rand(self.K, self.X.shape[1])
