@@ -3,7 +3,6 @@ __group__ = 'DM.18'
 
 import numpy as np
 import utils
-import math
 
 
 class KMeans:
@@ -19,6 +18,7 @@ class KMeans:
         self.K = K
         self._init_X(X)
         self._init_options(options)  # DICT options
+        self._init_centroids()
 
     #############################################################
     ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
@@ -38,7 +38,7 @@ class KMeans:
         """
 
 
-        X[:] = X.astype(np.float32)
+        X[:] = X.astype(np.float64)
 
         # TODO: fer el que ha dit l'Ali de files*columnes, channel
 
@@ -86,8 +86,8 @@ class KMeans:
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
         if self.options['km_init'].lower() == 'first':
-            self.centroids = np.zeros((self.K, self.X.shape[1]), dtype=np.float32)
-            self.old_centroids = np.zeros((self.K, self.X.shape[1]), dtype=np.float32)
+            self.centroids = np.zeros((self.K, self.X.shape[1]), dtype=np.float64)
+            self.old_centroids = np.zeros((self.K, self.X.shape[1]), dtype=np.float64)
 
             for i in range(self.K):
                 for x in self.X:
@@ -122,8 +122,7 @@ class KMeans:
 
         distances = distance(self.X, self.centroids)
 
-        for i, point in enumerate(distances):
-           self.labels[i] = np.argmin(point)
+        self.labels[:] = np.argmin(distances, axis=1)
 
     def get_centroids(self):
         """
@@ -133,7 +132,14 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        pass
+
+        self.old_centroids[:] = self.centroids
+
+        for c in range(self.K):
+            point_idexes = np.where(self.labels == c)
+            points_of_class = self.X[point_idexes]
+            self.centroids[c] = points_of_class.mean(axis=0)
+
 
     def converges(self):
         """
@@ -143,7 +149,7 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        return True
+        return (self.centroids == self.old_centroids).all()
 
     def fit(self):
         """
@@ -154,18 +160,58 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        pass
+
+        while True:
+            self.get_labels()
+            self.get_centroids()
+            self.num_iter += 1
+            if self.converges():
+                break
+
 
     def whitinClassDistance(self):
         """
          returns the whithin class distance of the current clustering
         """
 
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        return np.random.rand()
+
+        '''
+        wcd = 0
+        
+        for c in range(self.K):
+            points_of_class = self.X[np.where(self.labels == c)]
+            wcd += np.matmul(
+                        np.reshape(points_of_class[None, :] - points_of_class[:, None], (points_of_class.shape[0]**2, points_of_class.shape[1])),
+                        np.transpose(np.reshape(points_of_class[None, :] - points_of_class[:, None], (points_of_class.shape[0]**2, points_of_class.shape[1])))
+                    ).sum()
+        '''
+        '''
+        avg = []
+        for c in range(self.K):
+            points_of_class = self.X[np.where(self.labels == c)]
+            sum = 0
+            for i, pointa in enumerate(points_of_class):
+                for j, pointb in enumerate(points_of_class):
+                    sum += (pointa - pointb).sum()
+            avg.append(sum/len(points_of_class))
+        wcd = sum(avg)/len(avg)
+        '''
+        '''
+        print("aaaaaaaaaaa")
+        wcd = 0
+        for c in range(self.K):
+            points_of_class = self.X[np.where(self.labels == c)]
+            for point in points_of_class:
+                diff = (- points_of_class + point)
+                wcd += np.matmul(diff, diff.transpose()).sum()
+        '''
+        wcd = 0
+        for i, point in enumerate(self.X):
+            c = self.labels[i]
+            diff = (point - self.centroids[c])
+            wcd += np.matmul(diff, diff.transpose())
+
+        return wcd / len(self.X)
 
     def find_bestK(self, max_K):
         """
@@ -175,7 +221,19 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        pass
+        old_wcd = None
+        for k in range(2, max_K + 1):
+            self.K = k
+            self._init_centroids()
+            self.fit()
+            wcd = self.whitinClassDistance()
+            if old_wcd != None:
+                dec = 100 * (wcd / old_wcd)
+                if 100 - dec < 20:
+                    # la diferencia ya no es significativa y nos quedamos con el anterior
+                    self.K = k - 1
+                    break
+            old_wcd = wcd
 
 
 def distance(X, C):
@@ -215,4 +273,11 @@ def get_colors(centroids):
     ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
     ##  AND CHANGE FOR YOUR OWN CODE
     #########################################################
-    return list(utils.colors)
+    probabilities = utils.get_color_prob(centroids)
+    colors = []
+    for p in probabilities:
+        max_index = np.argmax(p)
+        colors.append(utils.colors[max_index])
+
+    return colors
+
