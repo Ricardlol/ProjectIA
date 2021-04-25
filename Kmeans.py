@@ -3,6 +3,8 @@ __group__ = 'DM.18'
 
 import numpy as np
 import utils
+import math
+
 
 class KMeans:
 
@@ -84,15 +86,28 @@ class KMeans:
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
         if self.options['km_init'].lower() == 'first':
-            self.centroids = np.zeros((self.K, self.X.shape[1]))
-            self.old_centroids = np.zeros((self.K, self.X.shape[1]))
-            for i in self.centroids:
+            self.centroids = np.zeros((self.K, self.X.shape[1]), dtype=np.float32)
+            self.old_centroids = np.zeros((self.K, self.X.shape[1]), dtype=np.float32)
 
-
+            for i in range(self.K):
+                for x in self.X:
+                    if x.tolist() not in self.centroids[0:i + 1].tolist():
+                        self.centroids[i] = x
+                        self.old_centroids[i] = x
+                        break
 
         else:
-            self.centroids = np.random.rand(self.K, self.X.shape[1])
-            self.old_centroids =np.random.rand(self.K, self.X.shape[1])
+            repetits = True
+            while repetits:
+                self.centroids = np.random.rand(self.K, self.X.shape[1])
+
+                repetits = False
+                for i in range(self.K):
+                    for j in range(i + 1, self.K):
+                        if self.centroids[i] == self.centroids[j]:
+                            repetits = True
+
+            self.old_centroids = self.centroids
 
 
     def get_labels(self):
@@ -104,6 +119,11 @@ class KMeans:
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
         self.labels = np.random.randint(self.K, size=self.X.shape[0])
+
+        distances = distance(self.X, self.centroids)
+
+        for i, point in enumerate(distances):
+           self.labels[i] = np.argmin(point)
 
     def get_centroids(self):
         """
@@ -174,8 +194,12 @@ def distance(X, C):
     ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
     ##  AND CHANGE FOR YOUR OWN CODE
     #########################################################
-    return np.random.rand(X.shape[0], C.shape[0])
+    arr = np.zeros((X.shape[0], C.shape[0]))
+    for i, point in enumerate(X):
+        for j, centroid in enumerate(C):
+            arr[i, j] = np.linalg.norm(point - centroid)
 
+    return arr
 
 def get_colors(centroids):
     """
