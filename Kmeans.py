@@ -2,6 +2,7 @@ __authors__ = ['1354223', '1571136', '1563587']
 __group__ = 'DM.18'
 
 import numpy as np
+import math
 import utils
 
 
@@ -24,11 +25,6 @@ class KMeans:
     ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
     #############################################################
 
-
-
-
-
-
     def _init_X(self, X):
         """Initialization of all pixels, sets X as an array of data in vector form (PxD)
             Args:
@@ -36,7 +32,6 @@ class KMeans:
                     if matrix has more than 2 dimensions, the dimensionality of the smaple space is the length of
                     the last dimension
         """
-
 
         X[:] = X.astype(np.float64)
 
@@ -73,9 +68,6 @@ class KMeans:
         ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
         #############################################################
 
-
-
-
     def _init_centroids(self):
         """
         Initialization of centroids
@@ -109,7 +101,6 @@ class KMeans:
 
             self.old_centroids = self.centroids
 
-
     def get_labels(self):
         """        Calculates the closest centroid of all points in X
         and assigns each point to the closest centroid
@@ -140,7 +131,6 @@ class KMeans:
             points_of_class = self.X[point_idexes]
             self.centroids[c] = points_of_class.mean(axis=0)
 
-
     def converges(self):
         """
         Checks if there is a difference between current and old centroids
@@ -168,43 +158,11 @@ class KMeans:
             if self.converges():
                 break
 
-
     def whitinClassDistance(self):
         """
          returns the whithin class distance of the current clustering
         """
 
-
-        '''
-        wcd = 0
-        
-        for c in range(self.K):
-            points_of_class = self.X[np.where(self.labels == c)]
-            wcd += np.matmul(
-                        np.reshape(points_of_class[None, :] - points_of_class[:, None], (points_of_class.shape[0]**2, points_of_class.shape[1])),
-                        np.transpose(np.reshape(points_of_class[None, :] - points_of_class[:, None], (points_of_class.shape[0]**2, points_of_class.shape[1])))
-                    ).sum()
-        '''
-        '''
-        avg = []
-        for c in range(self.K):
-            points_of_class = self.X[np.where(self.labels == c)]
-            sum = 0
-            for i, pointa in enumerate(points_of_class):
-                for j, pointb in enumerate(points_of_class):
-                    sum += (pointa - pointb).sum()
-            avg.append(sum/len(points_of_class))
-        wcd = sum(avg)/len(avg)
-        '''
-        '''
-        print("aaaaaaaaaaa")
-        wcd = 0
-        for c in range(self.K):
-            points_of_class = self.X[np.where(self.labels == c)]
-            for point in points_of_class:
-                diff = (- points_of_class + point)
-                wcd += np.matmul(diff, diff.transpose()).sum()
-        '''
         wcd = 0
         for i, point in enumerate(self.X):
             c = self.labels[i]
@@ -253,9 +211,9 @@ def distance(X, C):
     ##  AND CHANGE FOR YOUR OWN CODE
     #########################################################
     arr = np.zeros((X.shape[0], C.shape[0]))
-    for i, point in enumerate(X):
-        for j, centroid in enumerate(C):
-            arr[i, j] = np.linalg.norm(point - centroid)
+
+    for i in range(len(C)):
+        arr[:, i] = np.linalg.norm(X - C[i], axis=1)
 
     return arr
 
@@ -280,4 +238,3 @@ def get_colors(centroids):
         colors.append(utils.colors[max_index])
 
     return colors
-
