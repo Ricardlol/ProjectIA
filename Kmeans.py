@@ -59,7 +59,7 @@ class KMeans:
         if not 'max_iter' in options:
             options['max_iter'] = np.inf
         if not 'fitting' in options:
-            options['fitting'] = 'WCD'  #within class distance.
+            options['fitting'] = 'WCD'  # within class distance.
 
         # If your methods need any other prameter you can add it to the options dictionary
         self.options = options
@@ -101,15 +101,13 @@ class KMeans:
             self.old_centroids = self.centroids
 
         if self.options['km_init'].lower() == 'custom':
-            minimum = np.min(self.X, axis=1)
-            maximum = np.max(self.X, axis=1)
+            minimum = np.min(self.X, axis=0)
+            maximum = np.max(self.X, axis=0)
             line = maximum - minimum
-            part = line / (self.K-1)
+            part = line / (self.K - 1)
             for i in range(self.K):
                 self.centroids[i] = minimum + part * i
                 self.old_centroids[i] = self.centroids[i]
-
-
 
     def get_labels(self):
         """        Calculates the closest centroid of all points in X
@@ -149,7 +147,7 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        return (self.centroids == self.old_centroids).all()
+        return np.allclose(self.centroids, self.old_centroids, atol=self.options['tolerance'])
 
     def fit(self):
         """
@@ -226,6 +224,7 @@ def distance(X, C):
         arr[:, i] = np.linalg.norm(X - C[i], axis=1)
 
     return arr
+
 
 def get_colors(centroids):
     """
