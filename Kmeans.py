@@ -4,6 +4,7 @@ __group__ = 'DM.18'
 import numpy as np
 import math
 import utils
+import utils_data
 
 
 class KMeans:
@@ -30,6 +31,8 @@ class KMeans:
         """
 
         X[:] = X.astype(np.float64)
+
+        self.og_shape = X.shape
 
         if len(X.shape) > 2:
             self.X = np.reshape(X, (X.shape[0] * X.shape[1], X.shape[2]))
@@ -63,25 +66,27 @@ class KMeans:
         Initialization of centroids
         """
 
-        if self.options['km_init'].lower() == 'first':
-            self.centroids = np.zeros((self.K, self.X.shape[1]), dtype=np.float64)
-            self.old_centroids = np.zeros((self.K, self.X.shape[1]), dtype=np.float64)
+        self.centroids = np.zeros((self.K, self.X.shape[1]), dtype=np.float64)
+        self.old_centroids = np.zeros((self.K, self.X.shape[1]), dtype=np.float64)
 
+        if self.options['km_init'].lower() == 'first':
             for i in range(self.K):
                 for x in self.X:
                     if x.tolist() not in self.centroids[0:i + 1].tolist():
                         self.centroids[i] = x
                         self.old_centroids[i] = x
                         break
+
         if self.options['km_init'].lower() == 'random':
             repetits = True
             while repetits:
+
                 self.centroids = np.random.rand(self.K, self.X.shape[1])
 
                 repetits = False
                 for i in range(self.K):
                     for j in range(i + 1, self.K):
-                        if self.centroids[i] == self.centroids[j]:
+                        if np.all(self.centroids[i] == self.centroids[j]):
                             repetits = True
 
             self.old_centroids = self.centroids
@@ -151,25 +156,53 @@ class KMeans:
 
         return wcd / len(self.X)
 
-    def find_bestK(self, max_K):
+    def interClassDistance(self):
+        icd = 0
+
+        for c1 in self.centroids:
+            for c2 in self.centroids:
+                diff = (c2 - c1)
+                icd += np.matmul(diff, diff.transpose())
+
+        return icd / (len(self.centroids) * (len(self.centroids) - 1))
+
+    def calculateHeuristic(self, heuristic):
+        if heuristic == 'wcd':
+            return self.whitinClassDistance()
+        elif heuristic == 'icd':
+            return self.interClassDistance()
+
+    def shouldStop(self, old_h, h, heuristic, threshold):
+        if heuristic == 'wcd':
+            dec = 100 * (h / old_h)
+            if 100 - dec < threshold:
+                return True
+        elif heuristic == 'icd':
+            inc = 100 * (h / old_h)
+            if inc < threshold:
+                return True
+        return False
+
+    def find_bestK(self, max_K, heuristic='wcd', threshold=20):
         """
          sets the best k anlysing the results up to 'max_K' clusters
         """
 
-        old_wcd = None
+        old_h = None
         for k in range(2, max_K + 1):
             self.K = k
             self._init_centroids()
             self.num_iter = 0
             self.fit()
-            wcd = self.whitinClassDistance()
-            if old_wcd != None:
-                dec = 100 * (wcd / old_wcd)
-                if 100 - dec < 20:
+            h = self.calculateHeuristic(heuristic)
+            if old_h != None:
+                if self.shouldStop(old_h, h, heuristic, threshold):
                     # la diferencia ya no es significativa y nos quedamos con el anterior
                     self.K = k - 1
                     break
-            old_wcd = wcd
+            old_h = h
+
+            utils_data.visualize_k_means(self, self.og_shape)
 
 
 def distance(X, C):
