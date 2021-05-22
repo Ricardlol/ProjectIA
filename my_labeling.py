@@ -50,8 +50,14 @@ def Kmean_statistics(kmeans, Kmax):
         wcds.append(wcd)
         iters.append(kmeans.num_iter)
 
+    Ks = range(2, Kmax + 1)
+
     _, ax = plt.subplots()
-    ax.plot(wcds, iters)
+    ax.plot(Ks, iters)
+    plt.show()
+
+    _, ax = plt.subplots()
+    ax.plot(Ks, wcds)
     plt.show()
 
 
@@ -77,7 +83,7 @@ if __name__ == '__main__':
     visualize_retrieval(found, len(found))
 
 
-    kmeans = Kmeans.KMeans(test_imgs[3], options={'km_init': 'random'})
+    kmeans = Kmeans.KMeans(test_imgs[3], options={'km_init': 'first'})
     Kmean_statistics(kmeans, 10)
 
 '''
