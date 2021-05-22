@@ -74,7 +74,6 @@ class KMeans:
                 for x in self.X:
                     if x.tolist() not in self.centroids[0:i + 1].tolist():
                         self.centroids[i] = x
-                        self.old_centroids[i] = x
                         break
 
         if self.options['km_init'].lower() == 'random':
@@ -89,7 +88,6 @@ class KMeans:
                         if np.all(self.centroids[i] == self.centroids[j]):
                             repetits = True
 
-            self.old_centroids = self.centroids
 
         if self.options['km_init'].lower() == 'custom':
             minimum = np.min(self.X, axis=0)
@@ -98,7 +96,6 @@ class KMeans:
             part = line / (self.K - 1)
             for i in range(self.K):
                 self.centroids[i] = minimum + part * i
-                self.old_centroids[i] = self.centroids[i]
 
     def get_labels(self):
         """        Calculates the closest centroid of all points in X
@@ -121,7 +118,10 @@ class KMeans:
         for c in range(self.K):
             point_idexes = np.where(self.labels == c)
             points_of_class = self.X[point_idexes]
-            self.centroids[c] = points_of_class.mean(axis=0)
+            if points_of_class.size == 0:
+                self.centroids[c] = 0
+            else:
+                self.centroids[c] = points_of_class.mean(axis=0)
 
     def converges(self):
         """
