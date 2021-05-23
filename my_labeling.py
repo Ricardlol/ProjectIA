@@ -54,10 +54,18 @@ def Kmean_statistics(kmeans, Kmax):
 
     _, ax = plt.subplots()
     ax.plot(Ks, iters)
+    plt.title("Init centroids: " + kmeans.options['km_init'])
+    plt.xlabel("K")
+    plt.ylabel("Iterations")
+    plt.legend()
     plt.show()
 
     _, ax = plt.subplots()
     ax.plot(Ks, wcds)
+    plt.title("Init centroids: " + kmeans.options['km_init'])
+    plt.xlabel("K")
+    plt.ylabel("Within class distance")
+    plt.legend()
     plt.show()
 
 
