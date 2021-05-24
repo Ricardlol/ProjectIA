@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # List with all the existant classes
     classes = list(set(list(train_class_labels) + list(test_class_labels)))
 
-    images_to_test = test_imgs[0:50]
+    images_to_test = test_imgs[0:150]
 
     # SETUP KMEANS
     imgs = []
@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
 
     # RETRIEVAL BY SHAPE
-    found = Retrieval_by_shape(npimgs, classes, ['Shorts'])
+    found = Retrieval_by_shape(npimgs, class_labels, ['Shorts'])
     visualize_retrieval(found, len(found))
 
     # RETRIEVAL COMBINED
