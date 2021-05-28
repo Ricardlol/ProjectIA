@@ -6,6 +6,8 @@ from  Kmeans import KMeans, get_colors
 from KNN import KNN
 from utils_data import read_dataset, visualize_k_means, visualize_retrieval, Plot3DCloud
 import matplotlib.pyplot as plt
+from time import perf_counter
+
 import cv2
 
 from my_labeling import Get_shape_accuracy, Get_color_accuracy
@@ -21,30 +23,56 @@ if __name__ == '__main__':
 
     print(len(test_imgs))
 
-    images_to_test = test_imgs#[0:400]
-    expected_class_labels = test_class_labels#[0:400]
-    expected_color_labels = test_color_labels#[0:400]
+    imgNum = 150
+    images_to_test = test_imgs[0:imgNum]
+    expected_class_labels = test_class_labels[0:imgNum]
+    expected_color_labels = test_color_labels[0:imgNum]
 
+    accuracyList = []
+    thresholdList = []
+    timeList = []
 
-    # SETUP KMEANS
-    imgs = []
-    labels = []
-    for i, img in enumerate(images_to_test):
-        kmeans = KMeans(img, 0)
-        kmeans.find_bestK(len(train_color_labels), threshold=20)
-        k = kmeans.K
-        print("K (expected, actual) = ({}, {})".format(len(expected_color_labels[i]), k))
-        kmeans = KMeans(img, k)
-        kmeans.fit()
-        imgs.append(img)
-        labels.append(get_colors(kmeans.centroids))
+    for thr in range(5, 50, 5):
 
-    npimgs = np.array(imgs)
-    nplabels = np.array(labels, dtype=object)
+        # SETUP KMEANS
+        start = perf_counter()
+        imgs = []
+        labels = []
+        for i, img in enumerate(images_to_test):
+            kmeans = KMeans(img, 0)
+            kmeans.find_bestK(len(train_color_labels), threshold=thr)
+            k = kmeans.K
+            print("K (expected, actual) = ({}, {})".format(len(expected_color_labels[i]), k))
+            kmeans = KMeans(img, k)
+            kmeans.fit()
+            imgs.append(img)
+            labels.append(get_colors(kmeans.centroids))
 
-    # SETUP KNN
-    knn = KNN(train_imgs, train_class_labels)
-    class_labels = knn.predict(images_to_test, 5)
+        stop = perf_counter()
+        time = stop - start
+        # npimgs = np.array(imgs)
+        nplabels = np.array(labels, dtype=object)
 
-    print("Shape accuracy:", Get_shape_accuracy(class_labels, expected_class_labels))
-    print("Color accuracy:", Get_color_accuracy(nplabels, expected_color_labels))
+        # # SETUP KNN
+        # knn = KNN(train_imgs, train_class_labels)
+        # class_labels = knn.predict(images_to_test, 5)
+
+        # print("Shape accuracy:", Get_shape_accuracy(class_labels, expected_class_labels))
+        accuracyList.append(Get_color_accuracy(nplabels, expected_color_labels)[0])
+        thresholdList.append(thr)
+        timeList.append(time)
+        print("Color accuracy:", Get_color_accuracy(nplabels, expected_color_labels))
+
+    plt.title("KMeans")
+
+    plt.xlabel("Threshold %")
+    plt.ylabel("Accuracy %")
+
+    plt.plot(thresholdList, accuracyList)
+    plt.show()
+
+    plt.plot(thresholdList, timeList)
+    plt.ylabel("Time in seconds")
+
+    plt.show()
+
