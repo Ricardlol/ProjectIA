@@ -72,6 +72,9 @@ if __name__ == '__main__':
     plt.show()
 
     plt.plot(thresholdList, timeList)
+    plt.title("KMeans")
+
+    plt.xlabel("Threshold %")
     plt.ylabel("Time in seconds")
 
     plt.show()
