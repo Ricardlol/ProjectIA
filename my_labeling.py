@@ -40,13 +40,16 @@ def Retrieval_combined(imatges, class_labels, color_labels, classes, colors):
 
 def Kmean_statistics(kmeans, Kmax):
     wcds = []
+    icds = []
     iters = []
     for k in range(2, Kmax + 1):
         kmeans.K = k
         kmeans._init_centroids()
         kmeans.num_iter = 0
         kmeans.fit()
+        icd = kmeans.interClassDistance()
         wcd = kmeans.whitinClassDistance()
+        icds.append(icd)
         wcds.append(wcd)
         iters.append(kmeans.num_iter)
 
@@ -67,6 +70,45 @@ def Kmean_statistics(kmeans, Kmax):
     plt.ylabel("Within class distance")
     plt.legend()
     plt.show()
+
+    _, ax = plt.subplots()
+    ax.plot(Ks, icds)
+    plt.title("Init centroids: " + kmeans.options['km_init'])
+    plt.xlabel("K")
+    plt.ylabel("Inter class distance")
+    plt.legend()
+    plt.show()
+
+    _, ax = plt.subplots()
+    ax.plot(Ks, icds, wcds)
+    plt.title("Init centroids: " + kmeans.options['km_init'])
+    plt.xlabel("K")
+    plt.ylabel("Inter class distance")
+    plt.legend()
+    plt.show()
+
+def Get_shape_accuracy(actual_class_labels, expected_class_labels):
+    corrects = 0
+    incorrect_indexes = []
+    for i in range(len(actual_class_labels)):
+        if actual_class_labels[i] == expected_class_labels[i]:
+            corrects += 1
+        else:
+            incorrect_indexes.append(i)
+
+    return corrects / len(actual_class_labels), incorrect_indexes
+
+def Get_color_accuracy(actual_color_labels, expected_color_labels):
+    corrects = 0
+    incorrect_indexes = []
+    for i in range(len(actual_color_labels)):
+        if all(color in set(actual_color_labels[i]) for color in set(expected_color_labels[i])):
+            corrects += 1
+        else:
+            incorrect_indexes.append(i)
+
+    return corrects / len(actual_color_labels), incorrect_indexes
+
 
 
 if __name__ == '__main__':
@@ -93,6 +135,14 @@ if __name__ == '__main__':
 
     kmeans = Kmeans.KMeans(test_imgs[3], options={'km_init': 'first'})
     Kmean_statistics(kmeans, 10)
+
+    # Should be 100%
+    rate, incorrect_indexes = Get_shape_accuracy(test_class_labels, test_class_labels)
+    print("Shape accuracy:", rate)
+    print("Incorrect predictions:", incorrect_indexes)
+    rate, incorrect_indexes = Get_color_accuracy(test_color_labels, test_color_labels)
+    print("Color accuracy:", rate)
+    print("Incorrect predictions:", incorrect_indexes)
 
 '''
     # parte Find_BestK
