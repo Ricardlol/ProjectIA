@@ -10,6 +10,8 @@ from time import perf_counter
 
 import cv2
 
+from time import perf_counter
+
 from my_labeling import Get_shape_accuracy, Get_color_accuracy
 
 if __name__ == '__main__':

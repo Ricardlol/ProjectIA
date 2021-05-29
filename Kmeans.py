@@ -3,6 +3,9 @@ __group__ = 'DM.18'
 
 import numpy as np
 import math
+
+from scipy.spatial.distance import cdist
+
 import utils
 import utils_data
 import time
@@ -159,12 +162,18 @@ class KMeans:
     def interClassDistance(self):
         icd = 0
 
-        for c1 in self.centroids:
-            for c2 in self.centroids:
-                diff = (c2 - c1)
-                icd += np.matmul(diff, diff.transpose())
+        for c1 in range(self.K):
+            for c2 in range(self.K):
+                if c1 != c2:
+                    point_idexes = np.where(self.labels == c1)
+                    points_of_class1 = self.X[point_idexes]
+                    point_idexes = np.where(self.labels == c2)
+                    points_of_class2 = self.X[point_idexes]
 
-        return icd / (len(self.centroids) * (len(self.centroids) - 1))
+                    distance = cdist(points_of_class1, points_of_class2, metric='euclidean')
+                    icd += distance.mean()
+
+        return icd / (self.K * (self.K - 1))
 
     def fisherDiscriminant(self):
         wcd = self.whitinClassDistance()
@@ -172,25 +181,25 @@ class KMeans:
         return wcd / icd
 
     def calculateHeuristic(self, heuristic):
-        if heuristic == 'wcd':
+        if heuristic == 'within-class-distance':
             return self.whitinClassDistance()
-        elif heuristic == 'icd':
+        elif heuristic == 'inter-class-distance':
             return self.interClassDistance()
         elif heuristic == "fisher":
             return self.fisherDiscriminant()
 
     def shouldStop(self, old_h, h, heuristic, threshold):
-        if heuristic == 'wcd':
+        if heuristic == 'within-class-distance':
             dec = 100 * (h / old_h)
             if 100 - dec < threshold:
                 return True
-        elif heuristic == 'icd':
+        elif heuristic == 'inter-class-distance':
             inc = 100 * (h / old_h)
             if inc < threshold:
                 return True
         return False
 
-    def find_bestK(self, max_K, heuristic='wcd', threshold=20):
+    def find_bestK(self, max_K, heuristic='within-class-distance', threshold=20):
         """
          sets the best k anlysing the results up to 'max_K' clusters
         """
@@ -209,7 +218,7 @@ class KMeans:
                     break
             old_h = h
 
-            utils_data.visualize_k_means(self, self.og_shape)
+            # utils_data.visualize_k_means(self, self.og_shape)
 
 
 def distance(X, C):
