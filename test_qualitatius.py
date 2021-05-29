@@ -4,7 +4,7 @@ __group__ = 'DM.18'
 import numpy as np
 from  Kmeans import KMeans, get_colors
 from KNN import KNN
-from utils_data import read_dataset, visualize_k_means, visualize_retrieval, Plot3DCloud
+from utils_data import read_dataset, visualize_k_means, visualize_retrieval, Plot3DCloud, visualize_sobel
 import matplotlib.pyplot as plt
 import cv2
 
@@ -13,13 +13,15 @@ from my_labeling import Retrieval_by_color, Retrieval_by_shape, Retrieval_combin
 if __name__ == '__main__':
     # Load all the images and GT
     train_imgs, train_class_labels, train_color_labels, \
-    test_imgs, test_class_labels, test_color_labels = read_dataset(ROOT_FOLDER='./images/',
+        test_imgs, test_class_labels, test_color_labels = read_dataset(ROOT_FOLDER='./images/',
                                                                    gt_json='./images/gt.json')
 
     # List with all the existant classes
     classes = list(set(list(train_class_labels) + list(test_class_labels)))
 
-    images_to_test = test_imgs[0:150]
+    print(len(test_imgs))
+
+    images_to_test = test_imgs
 
     # SETUP KMEANS
     imgs = []
@@ -38,7 +40,7 @@ if __name__ == '__main__':
 
     # SETUP KNN
     knn = KNN(train_imgs, train_class_labels)
-    class_labels = knn.predict(images_to_test, 2)
+    class_labels, tested_images = knn.predict(images_to_test, 5)
 
     # RETRIEVE BY COLOR
     found = Retrieval_by_color(npimgs, nplabels, ['Red'])
@@ -47,7 +49,9 @@ if __name__ == '__main__':
 
     # RETRIEVAL BY SHAPE
     found = Retrieval_by_shape(npimgs, class_labels, ['Shorts'])
-    visualize_retrieval(found, len(found))
+    visualize_retrieval(found, 12)
+    found = Retrieval_by_shape(tested_images, class_labels, ['Shorts'])
+    visualize_sobel(found, 12)
 
     # RETRIEVAL COMBINED
     found = Retrieval_combined(npimgs, class_labels, nplabels, ['Shorts'], ['Green'])
