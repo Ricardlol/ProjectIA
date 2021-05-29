@@ -8,6 +8,8 @@ from utils_data import read_dataset, visualize_k_means, visualize_retrieval, Plo
 import matplotlib.pyplot as plt
 import cv2
 
+from time import perf_counter
+
 from my_labeling import Get_shape_accuracy, Get_color_accuracy
 
 if __name__ == '__main__':
@@ -43,8 +45,11 @@ if __name__ == '__main__':
     nplabels = np.array(labels, dtype=object)
 
     # SETUP KNN
+    start = perf_counter()
     knn = KNN(train_imgs, train_class_labels)
     class_labels = knn.predict(images_to_test, 5)
+    finish = perf_counter()
 
     print("Shape accuracy:", Get_shape_accuracy(class_labels, expected_class_labels))
+    print("Time:", finish - start)
     print("Color accuracy:", Get_color_accuracy(nplabels, expected_color_labels))
