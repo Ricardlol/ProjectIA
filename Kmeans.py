@@ -166,11 +166,18 @@ class KMeans:
 
         return icd / (len(self.centroids) * (len(self.centroids) - 1))
 
+    def fisherDiscriminant(self):
+        wcd = self.whitinClassDistance()
+        icd = self.interClassDistance()
+        return wcd / icd
+
     def calculateHeuristic(self, heuristic):
         if heuristic == 'wcd':
             return self.whitinClassDistance()
         elif heuristic == 'icd':
             return self.interClassDistance()
+        elif heuristic == "fisher":
+            return self.fisherDiscriminant()
 
     def shouldStop(self, old_h, h, heuristic, threshold):
         if heuristic == 'wcd':

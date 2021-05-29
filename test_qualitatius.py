@@ -47,8 +47,6 @@ if __name__ == '__main__':
         viewLen = len(found)
     visualize_retrieval(found, viewLen)
 
-
-
     # RETRIEVAL BY SHAPE
     found = Retrieval_by_shape(npimgs, class_labels, ['Shorts'])
     if len(found) < viewLen:

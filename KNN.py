@@ -69,8 +69,6 @@ class KNN:
         return np.array(classes)
 
 
-
-
     def predict(self, test_data, k):
         """
         predicts the class at which each element in test_data belongs to
