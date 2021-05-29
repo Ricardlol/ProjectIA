@@ -42,18 +42,22 @@ if __name__ == '__main__':
     knn = KNN(train_imgs, train_class_labels)
     class_labels, tested_images = knn.predict(images_to_test, 5)
 
+    viewLen=12
     # RETRIEVE BY COLOR
-    found = Retrieval_by_color(npimgs, nplabels, ['Red'])
-    visualize_retrieval(found, len(found))
+    found = Retrieval_by_color(npimgs, nplabels, ['Green'])
+    visualize_retrieval(found, min(len(found),viewLen ))
+
 
 
     # RETRIEVAL BY SHAPE
     found = Retrieval_by_shape(npimgs, class_labels, ['Shorts'])
-    visualize_retrieval(found, 12)
-    found = Retrieval_by_shape(tested_images, class_labels, ['Shorts'])
-    visualize_sobel(found, 12)
+    visualize_retrieval(found, min(len(found), viewLen))
+    found = Retrieval_by_shape(npimgs, class_labels, ['Shorts'])
+    visualize_sobel(found, min(len(found), viewLen))
 
     # RETRIEVAL COMBINED
     found = Retrieval_combined(npimgs, class_labels, nplabels, ['Shorts'], ['Green'])
-    visualize_retrieval(found, len(found))
+    if len(found) < viewLen:
+        viewLen = len(found)
+    visualize_retrieval(found, viewLen)
 
