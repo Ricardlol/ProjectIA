@@ -5,6 +5,7 @@ import numpy as np
 import math
 import utils
 import utils_data
+import time
 
 
 class KMeans:
@@ -79,7 +80,6 @@ class KMeans:
         if self.options['km_init'].lower() == 'random':
             repetits = True
             while repetits:
-
                 self.centroids = np.random.rand(self.K, self.X.shape[1])
 
                 repetits = False
