@@ -26,6 +26,7 @@ def Retrieval_by_color(imatges, etiquetes, colors):
 def Retrieval_by_shape(imatges, etiquetes, classes):
     matches = []
     for i, labels in enumerate(etiquetes):
+        # we will only search for 1 class at a time so this work
         if all(c in labels for c in classes):
             matches.append(imatges[i])
 
@@ -39,7 +40,7 @@ def Retrieval_combined(imatges, class_labels, color_labels, classes, colors):
 
     return matches
 
-def Kmean_statistics(kmeans, Kmax, heuristic):
+def Kmean_statistics2(kmeans, Kmax, heuristic):
     wcds = []
     icds = []
     fishers = []
@@ -79,7 +80,79 @@ def Kmean_statistics(kmeans, Kmax, heuristic):
 
     return iters, wcds
 
+def Kmean_statistics(kmeans, Kmax, heuristic):
+    #DEPRECATED, NO LONGER USED
+    wcds = []
+    icds = []
+    fishers = []
+    iters = []
 
+    for k in range(2, Kmax + 1):
+        kmeans.K = k
+        kmeans._init_centroids()
+        kmeans.num_iter = 0
+        kmeans.fit()
+        if heuristic == "wcd":
+            wcd = kmeans.whitinClassDistance()
+            wcds.append(wcd)
+
+        if heuristic == "inter":
+            icd = kmeans.interClassDistance()
+            icds.append(icd)
+
+        if heuristic == "fisher":
+            fisher = kmeans.fisherDiscriminant()
+            fishers.append(fisher)
+
+        iters.append(kmeans.num_iter)
+
+
+
+    Ks = range(2, Kmax + 1)
+
+    if heuristic == "wcd":
+        return iters, wcds
+
+    if heuristic == "inter":
+        return iters, icds
+
+    if heuristic == "fisher":
+        return iters, fishers
+
+    return iters, wcds
+
+    _, ax = plt.subplots()
+    ax.plot(Ks, iters)
+    #ax.plot(Ks, iters2)
+    plt.xlabel("K")
+    plt.ylabel("Iterations")
+    plt.legend(loc="best", labels=[kmeans.options['km_init']])
+    plt.show()
+
+    _, ax = plt.subplots()
+    ax.plot(Ks, wcds)
+    #ax.plot(Ks, wcds2)
+    plt.xlabel("K")
+    plt.ylabel("Within class distance")
+    #plt.legend(loc="best", labels=[kmeans.options['km_init'],kmeans2.options['km_init']])
+    plt.legend()
+    plt.show()
+
+    # _, ax = plt.subplots()
+    # ax.plot(Ks, icds)
+    # plt.title("Init centroids: " + kmeans.options['km_init'])
+    # plt.xlabel("K")
+    # plt.ylabel("Inter class distance")
+    # plt.legend()
+    # plt.show()
+    #
+    # _, ax = plt.subplots()
+    # ax.plot(Ks, fishers)
+    # plt.title("Init centroids: " + kmeans.options['km_init'])
+    # plt.xlabel("K")
+    # plt.ylabel("fisher discriminant")
+    # plt.legend()
+    # plt.show()
 
 def Get_shape_accuracy(actual_class_labels, expected_class_labels):
     corrects = 0
@@ -143,7 +216,7 @@ def printPlot2DMultipleKMinit(x, yN, title, legendList):
     plt.show()
 
 def allPlotsKMeansStatistics(test_imgs, km_init, heuristic):
-    imgNum = 5
+    imgNum = 20
     maxK = 10
     totalIterations = [0] * maxK
     totalDistance = [0] * maxK
@@ -154,7 +227,7 @@ def allPlotsKMeansStatistics(test_imgs, km_init, heuristic):
         totalIterationsAux = copy.deepcopy(totalIterations)
         totalDistanceAux = copy.deepcopy(totalDistance)
         kmeans = Kmeans.KMeans(test_imgs[x], options={'km_init': km_init})
-        newIterations, newDistance = Kmean_statistics(kmeans, maxK, heuristic)
+        newIterations, newDistance = Kmean_statistics2(kmeans, maxK, heuristic)
         iterationsList.append(newIterations)
         totalIterations = [x + y for x, y in zip(totalIterationsAux, newIterations)]
         distanceList.append(newDistance)
