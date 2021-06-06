@@ -40,7 +40,7 @@ def Retrieval_combined(imatges, class_labels, color_labels, classes, colors):
     return matches
 
 
-def Kmean_statistics(kmeans, Kmax):
+def Kmean_statistics(kmeans, Kmax, heuristic):
     wcds = []
     icds = []
     fishers = []
@@ -51,17 +51,32 @@ def Kmean_statistics(kmeans, Kmax):
         kmeans._init_centroids()
         kmeans.num_iter = 0
         kmeans.fit()
-        # icd = kmeans.interClassDistance()
-        wcd = kmeans.whitinClassDistance()
-        # fisher = kmeans.fisherDiscriminant()
-        # icds.append(icd)
-        wcds.append(wcd)
-        # fishers.append(fisher)
+        if heuristic == "wcd":
+            wcd = kmeans.whitinClassDistance()
+            wcds.append(wcd)
+
+        if heuristic == "inter":
+            icd = kmeans.interClassDistance()
+            icds.append(icd)
+
+        if heuristic == "fisher":
+            fisher = kmeans.fisherDiscriminant()
+            fishers.append(fisher)
+
         iters.append(kmeans.num_iter)
 
 
 
     Ks = range(2, Kmax + 1)
+
+    if heuristic == "wcd":
+        return iters, wcds
+
+    if heuristic == "inter":
+        return iters, icd
+
+    if heuristic == "fisher":
+        return iters, wcd
 
     return iters, wcds
 
@@ -122,12 +137,12 @@ def Get_color_accuracy(actual_color_labels, expected_color_labels):
 
 def printPlot2DAverage(x, y1, y2, y1label, y2label, km_init):
     plt.title("KMeans : " + km_init)
-
     plt.xlabel("K")
     plt.ylabel(y1label)
     plt.plot(x, y1)
     plt.show()
 
+    plt.title("KMeans : " + km_init)
     plt.xlabel("K")
     plt.ylabel(y2label)
     plt.plot(x, y2)
@@ -160,7 +175,7 @@ def printPlot2DMultipleKMinit(x, yN, title, legendList):
     plt.show()
 
 def allPlotsKMeansStatistics(test_imgs, km_init):
-    imgNum = 20
+    imgNum = 5
     maxK = 10
     totalIterations = [0] * maxK
     totalDistance = [0] * maxK
@@ -171,7 +186,7 @@ def allPlotsKMeansStatistics(test_imgs, km_init):
         totalIterationsAux = copy.deepcopy(totalIterations)
         totalDistanceAux = copy.deepcopy(totalDistance)
         kmeans = Kmeans.KMeans(test_imgs[x], options={'km_init': km_init})
-        newIterations, newDistance = Kmean_statistics(kmeans, maxK)
+        newIterations, newDistance = Kmean_statistics(kmeans, maxK, "wcd")
         iterationsList.append(newIterations)
         totalIterations = [x + y for x, y in zip(totalIterationsAux, newIterations)]
         distanceList.append(newDistance)
@@ -180,7 +195,7 @@ def allPlotsKMeansStatistics(test_imgs, km_init):
     averageIterations = [x / imgNum for x in totalIterations]
     averageDistance = [x / imgNum for x in totalDistance]
 
-    #printPlot2DAverage(totalKs, averageIterations, averageDistance, "Iterations", "Distance", km_init)
+    printPlot2DAverage(totalKs, averageIterations, averageDistance, "Iterations", "Distance", km_init)
 
     printPlot2DMultipleImages(totalKs, iterationsList, "Iterations by image : " + km_init)
     printPlot2DMultipleImages(totalKs, distanceList, "Distance by image : " + km_init)
@@ -215,12 +230,12 @@ if __name__ == '__main__':
     kminitDistance = []
     kminitOptions = ["first", "custom", "random"]
     for kminit in kminitOptions:
-        firstIterations, firstDistance = allPlotsKMeansStatistics(test_imgs, kminit)
-        kminitDistance.append(firstDistance)
-        kminitIteration.append(firstIterations)
+        iterations, distance = allPlotsKMeansStatistics(test_imgs, kminit)
+        kminitDistance.append(distance)
+        kminitIteration.append(iterations)
 
 
-    printPlot2DMultipleKMinit(totalKs, kminitIteration, "Iterations by km_init (heuristics = WCD)", kminitOptions)
+    #printPlot2DMultipleKMinit(totalKs, kminitIteration, "Iterations by km_init (heuristics = WCD)", kminitOptions)
     #printPlot2DMultipleKMinit(totalKs, kminitDistance, "Iterations by km_init : WCD", kminitOptions)
 
     # Should be 100%
