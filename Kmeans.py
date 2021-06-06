@@ -171,14 +171,16 @@ class KMeans:
                     points_of_class2 = self.X[point_idexes]
 
                     distance = cdist(points_of_class1, points_of_class2, metric='euclidean')
-                    icd += distance.mean()
+                    icd += distance.sum()
 
-        return icd / (self.K * (self.K - 1))
+        return icd / 2
+
 
     def fisherDiscriminant(self):
         wcd = self.whitinClassDistance()
         icd = self.interClassDistance()
         return wcd / icd
+
 
     def calculateHeuristic(self, heuristic):
         if heuristic == 'within-class-distance':
@@ -187,6 +189,7 @@ class KMeans:
             return self.interClassDistance()
         elif heuristic == "fisher":
             return self.fisherDiscriminant()
+
 
     def shouldStop(self, old_h, h, heuristic, threshold):
         if heuristic == 'within-class-distance':
