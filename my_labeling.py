@@ -1,6 +1,8 @@
 __authors__ = ['1354223', '1571136', '1563587']
 __group__ = 'DM.18'
 
+import copy
+
 import numpy as np
 import Kmeans
 import KNN
@@ -38,7 +40,7 @@ def Retrieval_combined(imatges, class_labels, color_labels, classes, colors):
     return matches
 
 
-def Kmean_statistics(kmeans,kmeans2, Kmax):
+def Kmean_statistics(kmeans, Kmax):
     wcds = []
     icds = []
     fishers = []
@@ -49,37 +51,28 @@ def Kmean_statistics(kmeans,kmeans2, Kmax):
         kmeans._init_centroids()
         kmeans.num_iter = 0
         kmeans.fit()
-        icd = kmeans.interClassDistance()
+        # icd = kmeans.interClassDistance()
         wcd = kmeans.whitinClassDistance()
-        fisher = kmeans.fisherDiscriminant()
-        icds.append(icd)
+        # fisher = kmeans.fisherDiscriminant()
+        # icds.append(icd)
         wcds.append(wcd)
-        fishers.append(fisher)
+        # fishers.append(fisher)
         iters.append(kmeans.num_iter)
 
 
-    '''wcds2 = []
-    iters2 = []
 
-    for c in range(2, Kmax + 1):
-        kmeans2.K = c
-        kmeans2._init_centroids()
-        kmeans2.num_iter = 0
-        kmeans2.fit()
-        wcd = kmeans2.whitinClassDistance()
-        wcds2.append(wcd)
-        iters2.append(kmeans2.num_iter)
-'''
     Ks = range(2, Kmax + 1)
 
-    '''_, ax = plt.subplots()
+    return iters, wcds
+
+    _, ax = plt.subplots()
     ax.plot(Ks, iters)
     #ax.plot(Ks, iters2)
     plt.xlabel("K")
     plt.ylabel("Iterations")
-    plt.legend(loc="best", labels=[kmeans.options['km_init'],kmeans2.options['km_init']])
+    plt.legend(loc="best", labels=[kmeans.options['km_init']])
     plt.show()
-'''
+
     _, ax = plt.subplots()
     ax.plot(Ks, wcds)
     #ax.plot(Ks, wcds2)
@@ -89,21 +82,21 @@ def Kmean_statistics(kmeans,kmeans2, Kmax):
     plt.legend()
     plt.show()
 
-    _, ax = plt.subplots()
-    ax.plot(Ks, icds)
-    plt.title("Init centroids: " + kmeans.options['km_init'])
-    plt.xlabel("K")
-    plt.ylabel("Inter class distance")
-    plt.legend()
-    plt.show()
-
-    _, ax = plt.subplots()
-    ax.plot(Ks, fishers)
-    plt.title("Init centroids: " + kmeans.options['km_init'])
-    plt.xlabel("K")
-    plt.ylabel("fisher discriminant")
-    plt.legend()
-    plt.show()
+    # _, ax = plt.subplots()
+    # ax.plot(Ks, icds)
+    # plt.title("Init centroids: " + kmeans.options['km_init'])
+    # plt.xlabel("K")
+    # plt.ylabel("Inter class distance")
+    # plt.legend()
+    # plt.show()
+    #
+    # _, ax = plt.subplots()
+    # ax.plot(Ks, fishers)
+    # plt.title("Init centroids: " + kmeans.options['km_init'])
+    # plt.xlabel("K")
+    # plt.ylabel("fisher discriminant")
+    # plt.legend()
+    # plt.show()
 
 def Get_shape_accuracy(actual_class_labels, expected_class_labels):
     corrects = 0
@@ -127,7 +120,14 @@ def Get_color_accuracy(actual_color_labels, expected_color_labels):
 
     return corrects / len(actual_color_labels), incorrect_indexes
 
+def printPlot2D(x, y, ylabel):
+    plt.title("KMeans")
 
+    plt.xlabel("K")
+    plt.ylabel(ylabel)
+
+    plt.plot(x, y)
+    plt.show()
 
 if __name__ == '__main__':
     # Load all the images and GT
@@ -150,11 +150,26 @@ if __name__ == '__main__':
 
     #visualize_retrieval(found, len(found))
 
-    kmeans = Kmeans.KMeans(test_imgs[3], options={'km_init': 'first'})
+    imgNum = 20
+    maxK = 20
+    totalIterations = [0] * maxK
+    totalDistance = [0] * maxK
+    totalKs = [x for x in range(2, maxK+1)]
 
-    kmeans2 = Kmeans.KMeans(test_imgs[3], options={'km_init': 'random'})
-    Kmean_statistics(kmeans,kmeans2, 10)
 
+    for x in range(imgNum):
+        totalIterationsAux = copy.deepcopy(totalIterations)
+        totalDistanceAux = copy.deepcopy(totalDistance)
+
+        kmeans = Kmeans.KMeans(test_imgs[x], options={'km_init': 'first'})
+        newIterations, newDistance = Kmean_statistics(kmeans, maxK)
+        totalIterations = [x+y for x, y in zip(totalIterationsAux, newIterations)]
+        totalDistance = [x+y for x, y in zip(totalDistanceAux, newDistance)]
+
+    averageIterations = [x/imgNum for x in totalIterations]
+    averageDistance = [x/imgNum for x in totalDistance]
+    printPlot2D(totalKs, averageIterations, "Iterations average")
+    printPlot2D(totalKs, averageDistance, "Within class distance average")
 
     # Should be 100%
     #rate, incorrect_indexes = Get_shape_accuracy(test_class_labels, test_class_labels)
