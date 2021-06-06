@@ -8,6 +8,7 @@ from scipy.spatial.distance import cdist
 
 import utils
 import utils_data
+import time
 
 
 class KMeans:
@@ -82,7 +83,6 @@ class KMeans:
         if self.options['km_init'].lower() == 'random':
             repetits = True
             while repetits:
-
                 self.centroids = np.random.rand(self.K, self.X.shape[1])
 
                 repetits = False
@@ -175,11 +175,18 @@ class KMeans:
 
         return icd / (self.K * (self.K - 1))
 
+    def fisherDiscriminant(self):
+        wcd = self.whitinClassDistance()
+        icd = self.interClassDistance()
+        return wcd / icd
+
     def calculateHeuristic(self, heuristic):
         if heuristic == 'within-class-distance':
             return self.whitinClassDistance()
         elif heuristic == 'inter-class-distance':
             return self.interClassDistance()
+        elif heuristic == "fisher":
+            return self.fisherDiscriminant()
 
     def shouldStop(self, old_h, h, heuristic, threshold):
         if heuristic == 'within-class-distance':

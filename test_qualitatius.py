@@ -47,8 +47,6 @@ if __name__ == '__main__':
     found = Retrieval_by_color(npimgs, nplabels, ['Green'])
     visualize_retrieval(found, min(len(found),viewLen ))
 
-
-
     # RETRIEVAL BY SHAPE
     found = Retrieval_by_shape(npimgs, class_labels, ['Shorts'])
     visualize_retrieval(found, min(len(found), viewLen))
