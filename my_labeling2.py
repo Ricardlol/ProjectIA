@@ -72,10 +72,10 @@ def Kmean_statistics(kmeans, Kmax, heuristic):
         return iters, wcds
 
     if heuristic == "inter":
-        return iters, icd
+        return iters, icds
 
     if heuristic == "fisher":
-        return iters, wcd
+        return iters, fishers
 
     return iters, wcds
 
