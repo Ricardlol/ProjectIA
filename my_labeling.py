@@ -80,8 +80,7 @@ def Kmean_statistics2(kmeans, Kmax, heuristic):
 
     return iters, wcds
 
-def Kmean_statistics(kmeans, Kmax, heuristic):
-    #DEPRECATED, NO LONGER USED
+def Kmean_statistics(kmeans, Kmax):
     wcds = []
     icds = []
     fishers = []
@@ -92,34 +91,15 @@ def Kmean_statistics(kmeans, Kmax, heuristic):
         kmeans._init_centroids()
         kmeans.num_iter = 0
         kmeans.fit()
-        if heuristic == "wcd":
-            wcd = kmeans.whitinClassDistance()
-            wcds.append(wcd)
-
-        if heuristic == "inter":
-            icd = kmeans.interClassDistance()
-            icds.append(icd)
-
-        if heuristic == "fisher":
-            fisher = kmeans.fisherDiscriminant()
-            fishers.append(fisher)
-
+        icd = kmeans.interClassDistance()
+        wcd = kmeans.whitinClassDistance()
+        fisher = kmeans.fisherDiscriminant()
+        icds.append(icd)
+        wcds.append(wcd)
+        fishers.append(fisher)
         iters.append(kmeans.num_iter)
 
-
-
     Ks = range(2, Kmax + 1)
-
-    if heuristic == "wcd":
-        return iters, wcds
-
-    if heuristic == "inter":
-        return iters, icds
-
-    if heuristic == "fisher":
-        return iters, fishers
-
-    return iters, wcds
 
     _, ax = plt.subplots()
     ax.plot(Ks, iters)
@@ -138,21 +118,21 @@ def Kmean_statistics(kmeans, Kmax, heuristic):
     plt.legend()
     plt.show()
 
-    # _, ax = plt.subplots()
-    # ax.plot(Ks, icds)
-    # plt.title("Init centroids: " + kmeans.options['km_init'])
-    # plt.xlabel("K")
-    # plt.ylabel("Inter class distance")
-    # plt.legend()
-    # plt.show()
-    #
-    # _, ax = plt.subplots()
-    # ax.plot(Ks, fishers)
-    # plt.title("Init centroids: " + kmeans.options['km_init'])
-    # plt.xlabel("K")
-    # plt.ylabel("fisher discriminant")
-    # plt.legend()
-    # plt.show()
+    _, ax = plt.subplots()
+    ax.plot(Ks, icds)
+    plt.title("Init centroids: " + kmeans.options['km_init'])
+    plt.xlabel("K")
+    plt.ylabel("Inter class distance")
+    plt.legend()
+    plt.show()
+    
+    _, ax = plt.subplots()
+    ax.plot(Ks, fishers)
+    plt.title("Init centroids: " + kmeans.options['km_init'])
+    plt.xlabel("K")
+    plt.ylabel("fisher discriminant")
+    plt.legend()
+    plt.show()
 
 def Get_shape_accuracy(actual_class_labels, expected_class_labels):
     corrects = 0
