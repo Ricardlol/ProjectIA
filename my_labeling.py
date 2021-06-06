@@ -120,8 +120,8 @@ def Get_color_accuracy(actual_color_labels, expected_color_labels):
 
     return corrects / len(actual_color_labels), incorrect_indexes
 
-def printPlot2DAverage(x, y1, y2, y1label, y2label):
-    plt.title("KMeans")
+def printPlot2DAverage(x, y1, y2, y1label, y2label, km_init):
+    plt.title("KMeans : " + km_init)
 
     plt.xlabel("K")
     plt.ylabel(y1label)
@@ -150,6 +150,43 @@ def printPlot2DMultipleImages(x, yN, title):
     plt.legend()
     plt.show()
 
+def printPlot2DMultipleKMinit(x, yN, title, legendList):
+    plt.title(title)
+    plt.xlabel("K")
+    plt.ylabel("Average Iterations")
+    for yIndex, y in enumerate(yN):
+        plt.plot(x, y, label=legendList[yIndex])
+    plt.legend()
+    plt.show()
+
+def allPlotsKMeansStatistics(test_imgs, km_init):
+    imgNum = 20
+    maxK = 10
+    totalIterations = [0] * maxK
+    totalDistance = [0] * maxK
+    totalKs = [x for x in range(2, maxK + 1)]
+    iterationsList = []
+    distanceList = []
+    for x in range(imgNum):
+        totalIterationsAux = copy.deepcopy(totalIterations)
+        totalDistanceAux = copy.deepcopy(totalDistance)
+        kmeans = Kmeans.KMeans(test_imgs[x], options={'km_init': km_init})
+        newIterations, newDistance = Kmean_statistics(kmeans, maxK)
+        iterationsList.append(newIterations)
+        totalIterations = [x + y for x, y in zip(totalIterationsAux, newIterations)]
+        distanceList.append(newDistance)
+        totalDistance = [x + y for x, y in zip(totalDistanceAux, newDistance)]
+
+    averageIterations = [x / imgNum for x in totalIterations]
+    averageDistance = [x / imgNum for x in totalDistance]
+
+    #printPlot2DAverage(totalKs, averageIterations, averageDistance, "Iterations", "Distance", km_init)
+
+    printPlot2DMultipleImages(totalKs, iterationsList, "Iterations by image : " + km_init)
+    printPlot2DMultipleImages(totalKs, distanceList, "Distance by image : " + km_init)
+
+    return averageIterations, averageDistance
+
 
 if __name__ == '__main__':
     # Load all the images and GT
@@ -172,33 +209,19 @@ if __name__ == '__main__':
 
     #visualize_retrieval(found, len(found))
 
-    imgNum = 5
     maxK = 10
-    totalIterations = [0] * maxK
-    totalDistance = [0] * maxK
-    totalKs = [x for x in range(2, maxK+1)]
+    totalKs = [x for x in range(2, maxK + 1)]
+    kminitIteration = []
+    kminitDistance = []
+    kminitOptions = ["first", "custom", "random"]
+    for kminit in kminitOptions:
+        firstIterations, firstDistance = allPlotsKMeansStatistics(test_imgs, kminit)
+        kminitDistance.append(firstDistance)
+        kminitIteration.append(firstIterations)
 
-    iterationsList = []
-    distanceList = []
 
-
-    for x in range(imgNum):
-        totalIterationsAux = copy.deepcopy(totalIterations)
-        totalDistanceAux = copy.deepcopy(totalDistance)
-
-        kmeans = Kmeans.KMeans(test_imgs[x], options={'km_init': 'first'})
-        newIterations, newDistance = Kmean_statistics(kmeans, maxK)
-        iterationsList.append(newIterations)
-        totalIterations = [x+y for x, y in zip(totalIterationsAux, newIterations)]
-        distanceList.append(newDistance)
-        totalDistance = [x+y for x, y in zip(totalDistanceAux, newDistance)]
-
-    averageIterations = [x/imgNum for x in totalIterations]
-    averageDistance = [x/imgNum for x in totalDistance]
-    printPlot2DAverage(totalKs, averageIterations, averageDistance, "Iterations", "Distance")
-    printPlot2DMultipleImages(totalKs, iterationsList, "Iterations by image")
-    printPlot2DMultipleImages(totalKs, distanceList, "Distance by image")
-
+    printPlot2DMultipleKMinit(totalKs, kminitIteration, "Iterations by km_init (heuristics = WCD)", kminitOptions)
+    #printPlot2DMultipleKMinit(totalKs, kminitDistance, "Iterations by km_init : WCD", kminitOptions)
 
     # Should be 100%
     #rate, incorrect_indexes = Get_shape_accuracy(test_class_labels, test_class_labels)
